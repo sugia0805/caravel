@@ -422,6 +422,16 @@ appbuilder.add_view(
     category_icon='fa-database',)
 
 
+class DatabaseAsync(DatabaseView):
+    list_columns = ['id', 'database_name']
+
+appbuilder.add_view_no_menu(DatabaseAsync)
+
+class DatabaseTablesAsync(DatabaseView):
+    list_columns = ['id', 'all_table_names']
+
+appbuilder.add_view_no_menu(DatabaseTablesAsync)
+
 class TableModelView(CaravelModelView, DeleteMixin):  # noqa
     datamodel = SQLAInterface(models.SqlaTable)
     list_columns = [
@@ -1200,20 +1210,19 @@ class Caravel(BaseCaravelView):
     @expose("/table/<database_id>/<table_name>/")
     @log_this
     def table(self, database_id, table_name):
-        mydb = db.session.query(
-            models.Database).filter_by(id=database_id).first()
-        cols = mydb.get_columns(table_name)
-        df = pd.DataFrame([(c['name'], c['type']) for c in cols])
-        df.columns = ['col', 'type']
-        tbl_cls = (
-            "dataframe table table-striped table-bordered "
-            "table-condensed sql_results").split(' ')
-        return self.render_template(
-            "caravel/ajah.html",
-            content=df.to_html(
-                index=False,
-                na_rep='',
-                classes=tbl_cls))
+        mydb = db.session.query(models.Database).filter_by(id=database_id).one()
+        cols = []
+        t = mydb.get_columns(table_name)
+        for col in t:
+            cols.append({
+                'name': col['name'],
+                'type': '{}'.format(col['type']),
+            })
+        tbl = {
+            'name': table_name,
+            'columns': cols,
+        }
+        return Response(json.dumps(tbl), mimetype="application/json")
 
     @has_access
     @expose("/select_star/<database_id>/<table_name>/")
