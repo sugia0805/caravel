@@ -324,6 +324,7 @@ def json_int_dttm_ser(obj):
 
 def error_msg_from_exception(e):
     """Translate exception into error message
+
     Database have different ways to handle exception. This function attempts
     to make sense of the exception object and construct a human readable
     sentence.

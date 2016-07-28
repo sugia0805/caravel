@@ -883,7 +883,7 @@ class Caravel(BaseCaravelView):
                 form_data=request.args,
                 slice_=slc)
         except Exception as e:
-            flash(str(e), "danger")
+            flash(utils.error_msg_from_exception(e), "danger")
             return redirect(error_redirect)
         if request.args.get("json") == "true":
             status = 200
@@ -895,7 +895,7 @@ class Caravel(BaseCaravelView):
                     payload = obj.get_json()
                 except Exception as e:
                     logging.exception(e)
-                    payload = str(e)
+                    payload = utils.error_msg_from_exception(e)
                     status = 500
             resp = Response(
                 payload,
@@ -925,7 +925,7 @@ class Caravel(BaseCaravelView):
                 if config.get("DEBUG"):
                     raise(e)
                 return Response(
-                    str(e),
+                    utils.error_msg_from_exception(e),
                     status=500,
                     mimetype="application/json")
             return resp
@@ -1191,7 +1191,7 @@ class Caravel(BaseCaravelView):
                 not self.can_access(
                     'all_datasource_access', 'all_datasource_access')):
             flash(
-                "This view requires the `all_datasource_access` "
+                "SQL Lab requires the `all_datasource_access` "
                 "permission", "danger")
             return redirect("/tablemodelview/list/")
         mydb = db.session.query(
@@ -1212,7 +1212,12 @@ class Caravel(BaseCaravelView):
     def table(self, database_id, table_name):
         mydb = db.session.query(models.Database).filter_by(id=database_id).one()
         cols = []
-        t = mydb.get_columns(table_name)
+        try:
+            t = mydb.get_columns(table_name)
+        except Exception as e:
+            return Response(
+                json.dumps({'error': utils.error_msg_from_exception(e)}),
+                mimetype="application/json")
         for col in t:
             dtype = ""
             try:
@@ -1286,7 +1291,7 @@ class Caravel(BaseCaravelView):
                 content = (
                     '<div class="alert alert-danger">'
                     "{}</div>"
-                ).format(e.message)
+                ).format(utils.error_msg_from_exception(e))
         session.commit()
         return content
 
@@ -1328,7 +1333,6 @@ class Caravel(BaseCaravelView):
                 df = pd.read_sql_query(sql=sql, con=eng)
                 df = df.fillna(0)  # TODO make sure NULL
             except Exception as e:
-                logging.exception(e)
                 error_msg = utils.error_msg_from_exception(e)
 
         session.commit()
