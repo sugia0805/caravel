@@ -1,12 +1,12 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
 import { Alert } from 'react-bootstrap';
 import { Table } from 'reactable';
 
 
-const ResultSet = React.createClass({
+class ResultSet extends React.Component {
   shouldComponentUpdate() {
     return false;
-  },
+  }
   render() {
     if (this.props.resultset.data.length > 0) {
       return (
@@ -17,10 +17,15 @@ const ResultSet = React.createClass({
           className="table table-condensed"
         />
       );
-    } else {
-      return (<Alert bsStyle="warning">The query returned no data</Alert>);
     }
-  },
-});
+    return (<Alert bsStyle="warning">The query returned no data</Alert>);
+  }
+}
+ResultSet.propTypes = {
+  resultset: React.PropTypes.object,
+};
+
+ResultSet.defaultProps = {
+};
 
 export default ResultSet;

@@ -15,22 +15,14 @@ const STATE_COLOR_MAP = {
   success: 'green',
 };
 
-const QueryLog = React.createClass({
-  propTypes: {
-    queries: React.PropTypes.array,
-  },
-  getDefaultProps() {
-    return {
-      queries: [],
-    };
-  },
+class QueryLog extends React.Component {
   render() {
-    var activeQeId = this.props.tabHistory[this.props.tabHistory.length - 1];
-    var data = this.props.queries.filter((q) => { return (q.sqlEditorId === activeQeId); });
+    const activeQeId = this.props.tabHistory[this.props.tabHistory.length - 1];
+    let data = this.props.queries.filter((q) => (q.sqlEditorId === activeQeId));
     data = data.map((query) => {
-      var q = Object.assign({}, query);
-      var since = (q.endDttm) ? q.endDttm : new Date();
-      var duration = since.valueOf() - q.startDttm.valueOf();
+      const q = Object.assign({}, query);
+      const since = (q.endDttm) ? q.endDttm : new Date();
+      let duration = since.valueOf() - q.startDttm.valueOf();
       duration = moment.utc(duration);
       if (q.endDttm) {
         q.duration = duration.format('HH:mm:ss.SS');
@@ -40,7 +32,7 @@ const QueryLog = React.createClass({
       q.state = (
         <span
           className="label label-default"
-          style={{ 'backgroundColor': STATE_COLOR_MAP[q.state] }}
+          style={{ backgroundColor: STATE_COLOR_MAP[q.state] }}
         >
           {q.state}
         </span>
@@ -76,15 +68,23 @@ const QueryLog = React.createClass({
           data={data}
         />
       );
-    } else {
-      return (
-        <Alert bsStyle="info">
-          No query history yet...
-        </Alert>
-      );
     }
-  },
-});
+    return (
+      <Alert bsStyle="info">
+        No query history yet...
+      </Alert>
+    );
+  }
+}
+QueryLog.defaultProps = {
+  queries: [],
+};
+
+QueryLog.propTypes = {
+  queries: React.PropTypes.array,
+  tabHistory: React.PropTypes.array,
+  actions: React.PropTypes.object,
+};
 
 function mapStateToProps(state) {
   return {

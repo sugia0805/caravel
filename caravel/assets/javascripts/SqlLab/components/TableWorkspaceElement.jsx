@@ -1,5 +1,5 @@
-import React, { PropTypes } from 'react';
-import { Alert, Button, ButtonGroup } from 'react-bootstrap';
+import React from 'react';
+import { ButtonGroup } from 'react-bootstrap';
 import Link from './Link';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -9,18 +9,18 @@ import shortid from 'shortid';
 // CSS
 import 'react-select/dist/react-select.css';
 
-const TableWorkspaceElement = React.createClass({
+class TableWorkspaceElement extends React.Component {
   selectStar() {
-    var cols = '';
-    var that = this;
+    let cols = '';
+    const that = this;
     this.props.table.columns.forEach(function (col, i) {
       cols += col.name;
       if (i < that.props.table.columns.length - 1) {
         cols += ', ';
       }
     });
-    var sql = `SELECT ${cols}\nFROM ${this.props.table.name}`;
-    var qe = {
+    const sql = `SELECT ${cols}\nFROM ${this.props.table.name}`;
+    const qe = {
       id: shortid.generate(),
       title: this.props.table.name,
       dbId: this.props.table.dbId,
@@ -28,11 +28,12 @@ const TableWorkspaceElement = React.createClass({
       sql,
     };
     this.props.actions.addQueryEditor(qe);
-  },
+  }
   render() {
-    var metadata = null;
+    let metadata = null;
+    let buttonToggle;
     if (!this.props.table.expanded) {
-      var buttonToggle = (
+      buttonToggle = (
         <Link
           href="#"
           onClick={this.props.actions.expandTable.bind(this, this.props.table)}
@@ -42,21 +43,17 @@ const TableWorkspaceElement = React.createClass({
           <i className="fa fa-minus" /> {this.props.table.name}
         </Link>
       );
-      metadata = this.props.table.columns.map((col) => {
-        return (
-          <div
-            className="clearfix"
-          >
-            <span className="pull-left">{col.name}</span>
-            <span className="pull-right">{col.type}</span>
-          </div>
-        );
-      });
+      metadata = this.props.table.columns.map((col) =>
+        <div className="clearfix">
+          <span className="pull-left">{col.name}</span>
+          <span className="pull-right">{col.type}</span>
+        </div>
+      );
       metadata = (
         <div style={{ 'margin-bottom': '5px' }}>{metadata}</div>
       );
     } else {
-      var buttonToggle = (
+      buttonToggle = (
         <Link
           href="#"
           onClick={this.props.actions.collapseTable.bind(this, this.props.table)}
@@ -73,7 +70,7 @@ const TableWorkspaceElement = React.createClass({
         <ButtonGroup className="ws-el-controls pull-right">
           <Link
             className="fa fa-play"
-            onClick={this.selectStar}
+            onClick={this.selectStar.bind(this)}
             tooltip="Run query in a new tab"
             href="#"
           />
@@ -87,8 +84,15 @@ const TableWorkspaceElement = React.createClass({
         {metadata}
       </div>
     );
-  },
-});
+  }
+}
+TableWorkspaceElement.propTypes = {
+  table: React.PropTypes.object,
+  actions: React.PropTypes.object,
+};
+TableWorkspaceElement.defaultProps = {
+  table: null,
+};
 
 function mapDispatchToProps(dispatch) {
   return {

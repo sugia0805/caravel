@@ -1,25 +1,24 @@
 import React from 'react';
-import { Button, DropdownButton, MenuItem, Panel, Tab, Tabs } from 'react-bootstrap';
+import { DropdownButton, MenuItem, Panel, Tab, Tabs } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as Actions from '../actions';
 import SqlEditor from './SqlEditor';
 import shortid from 'shortid';
-import Link from './Link';
 
-var queryCount = 1;
+let queryCount = 1;
 
-const QueryEditors = React.createClass({
+class QueryEditors extends React.Component {
   renameTab(qe) {
-    var newTitle = prompt('Enter a new title for the tab');
+    const newTitle = prompt('Enter a new title for the tab');
     if (newTitle) {
       this.props.actions.queryEditorSetTitle(qe, newTitle);
     }
-  },
+  }
   newQueryEditor() {
     queryCount++;
-    var dbId = (this.props.workspaceDatabase) ? this.props.workspaceDatabase.id : null;
-    var qe = {
+    const dbId = (this.props.workspaceDatabase) ? this.props.workspaceDatabase.id : null;
+    const qe = {
       id: shortid.generate(),
       title: `Query ${queryCount}`,
       dbId,
@@ -27,29 +26,30 @@ const QueryEditors = React.createClass({
       sql: 'SELECT ...',
     };
     this.props.actions.addQueryEditor(qe);
-  },
+  }
   handleSelect(key) {
     if (key === 'add_tab') {
       this.newQueryEditor();
     } else {
       this.props.actions.setActiveQueryEditor({ id: key });
     }
-  },
+  }
   render() {
-    var that = this;
-    var editors = this.props.queryEditors.map(function (qe, i) {
-      var latestQuery = null;
+    const that = this;
+    const editors = this.props.queryEditors.map((qe, i) => {
+      let latestQuery;
       that.props.queries.forEach((q) => {
-        if (q.id == qe.latestQueryId) {
+        if (q.id === qe.latestQueryId) {
           latestQuery = q;
         }
       });
-      var state = (latestQuery) ? latestQuery.state : '';
-      var tabTitle = (
+      const state = (latestQuery) ? latestQuery.state : '';
+      const tabTitle = (
         <div>
           <div className={'circle ' + state} /> {qe.title} {' '}
           <DropdownButton
             bsSize="small"
+            id={"ddbtn-tab-" + i}
             className="no-shadow"
             id="bg-vertical-dropdown-1"
           >
@@ -68,24 +68,36 @@ const QueryEditors = React.createClass({
           title={tabTitle}
           eventKey={qe.id}
         >
-            <Panel className="nopadding">
-              <SqlEditor
-                name={qe.id}
-                queryEditor={qe}
-                latestQuery={latestQuery}
-                callback={that.render.bind(that)}
-              />
-            </Panel>
+          <Panel className="nopadding">
+            <SqlEditor
+              queryEditor={qe}
+              latestQuery={latestQuery}
+            />
+          </Panel>
         </Tab>);
     });
     return (
-      <Tabs bsStyle="pills" activeKey={this.props.tabHistory[this.props.tabHistory.length - 1]} onSelect={this.handleSelect}>
+      <Tabs
+        bsStyle="pills"
+        activeKey={this.props.tabHistory[this.props.tabHistory.length - 1]}
+        onSelect={this.handleSelect.bind(this)}
+      >
         {editors}
         <Tab title={<div><i className="fa fa-plus-circle" />&nbsp;</div>} eventKey="add_tab" />
       </Tabs>
     );
-  },
-});
+  }
+}
+QueryEditors.propTypes = {
+  actions: React.PropTypes.object,
+  tabHistory: React.PropTypes.array,
+  queryEditors: React.PropTypes.array,
+  workspaceDatabase: React.PropTypes.object,
+};
+QueryEditors.defaultProps = {
+  tabHistory: [],
+  queryEditors: [],
+};
 
 function mapStateToProps(state) {
   return {

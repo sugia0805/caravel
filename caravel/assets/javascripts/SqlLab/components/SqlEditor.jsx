@@ -1,5 +1,6 @@
+const $ = window.$ = require('jquery');
 import React from 'react';
-import { Button, ButtonGroup, DropdownButton, MenuItem, Label, FormControl, FormGroup } from 'react-bootstrap';
+import { Button, ButtonGroup, DropdownButton, MenuItem } from 'react-bootstrap';
 
 import AceEditor from 'react-ace';
 import 'brace/mode/sql';
@@ -15,19 +16,19 @@ import ButtonWithTooltip from './ButtonWithTooltip';
 import SouthPane from './SouthPane';
 import Timer from './Timer';
 
-
 // CSS
 import 'react-select/dist/react-select.css';
 
-const SqlEditor = React.createClass({
-  getInitialState() {
-    return {
-      sql: this.props.queryEditor.sql,
-      autorun: this.props.queryEditor.autorun,
+class SqlEditor extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       databaseOptions: [],
       databaseLoading: true,
+      sql: props.queryEditor.sql,
+      autorun: props.queryEditor.autorun,
     };
-  },
+  }
   componentDidMount() {
     this.fetchDatabaseOptions();
     if (this.state.autorun) {
@@ -35,24 +36,20 @@ const SqlEditor = React.createClass({
       this.props.actions.queryEditorSetAutorun(this.props.queryEditor, false);
       this.startQuery();
     }
-  },
-  fetchDatabaseOptions(input, callback) {
+  }
+  fetchDatabaseOptions() {
     this.setState({ databaseLoading: true });
-    var that = this;
-    var url = '//' + window.location.host + '/databaseasync/api/read';
+    const that = this;
+    const url = '//' + window.location.host + '/databaseasync/api/read';
     $.get(url, function (data) {
-      var options = data.result.map((db) => {
-        return { value: db.id, label: db.database_name };
-      });
+      const options = data.result.map((db) => ({ value: db.id, label: db.database_name }));
       that.setState({ databaseOptions: options });
       that.setState({ databaseLoading: false });
-      that.render();
     });
-    this.render();
-  },
+  }
   startQuery() {
-    var that = this;
-    var query = {
+    const that = this;
+    const query = {
       id: shortid.generate(),
       sqlEditorId: this.props.queryEditor.id,
       sql: this.state.sql,
@@ -61,8 +58,8 @@ const SqlEditor = React.createClass({
       dbId: this.props.queryEditor.dbId,
       startDttm: new Date(),
     };
-    var url = '//' + window.location.host + '/caravel/sql_json/';
-    var data = {
+    const url = '//' + window.location.host + '/caravel/sql_json/';
+    const data = {
       sql: this.state.sql,
       database_id: this.props.queryEditor.dbId,
       json: true,
@@ -73,37 +70,37 @@ const SqlEditor = React.createClass({
       dataType: 'json',
       url,
       data,
-      success(data) {
+      success(results) {
         try {
-          that.props.actions.querySuccess(query, data);
+          that.props.actions.querySuccess(query, results);
         } catch (e) {
           that.props.actions.queryFailed(query, e);
         }
       },
-      error(err, err2) {
-        var msg = '';
+      error(err) {
+        let msg = '';
         try {
-          msg = err.responseJSON.msg;
+          msg = err.responseJSON.error;
         } catch (e) {
           msg = (err.responseText) ? err.responseText : e;
         }
+        console.log([err, msg]);
         that.props.actions.queryFailed(query, msg);
       },
     });
-  },
+  }
   stopQuery() {
     this.props.actions.stopQuery(this.props.latestQuery);
-  },
+  }
   changeDb(db) {
     this.props.actions.queryEditorSetDb(this.props.queryEditor, db.value);
-    this.render();
-  },
+  }
   textChange(text) {
     this.setState({ sql: text });
-  },
+  }
   notImplemented() {
     alert('Not implemented');
-  },
+  }
   addWorkspaceQuery() {
     this.props.actions.addWorkspaceQuery({
       id: shortid.generate(),
@@ -111,17 +108,13 @@ const SqlEditor = React.createClass({
       dbId: this.props.queryEditor.dbId,
       title: this.props.queryEditor.title,
     });
-  },
-  ctasChange() {
-  },
-  visualize() {
-  },
+  }
+  ctasChange() {}
+  visualize() {}
   render() {
-    this.props.callback();
-    var body = (<div />);
-    var runButtons = (
+    let runButtons = (
       <ButtonGroup className="inline m-r-5">
-        <Button onClick={this.startQuery} disabled={!(this.props.queryEditor.dbId)}>
+        <Button onClick={this.startQuery.bind(this)} disabled={!(this.props.queryEditor.dbId)}>
           <i className="fa fa-table" /> Run
         </Button>
         <Button onClick={this.notImpemented} disabled={!(this.props.queryEditor.dbId)}>
@@ -129,24 +122,25 @@ const SqlEditor = React.createClass({
         </Button>
       </ButtonGroup>
     );
-    if (this.props.latestQuery && this.props.latestQuery.state == 'running') {
+    if (this.props.latestQuery && this.props.latestQuery.state === 'running') {
       runButtons = (
-      <ButtonGroup className="inline m-r-5">
-        <Button onClick={this.stopQuery}>
-          <a className="fa fa-stop" /> Stop
-        </Button>
-      </ButtonGroup>);
+        <ButtonGroup className="inline m-r-5">
+          <Button onClick={this.stopQuery.bind(this)}>
+            <a className="fa fa-stop" /> Stop
+          </Button>
+        </ButtonGroup>
+      );
     }
-    var rightButtons = (
+    const rightButtons = (
       <ButtonGroup className="inlineblock">
         <ButtonWithTooltip
           tooltip="Save this query in your workspace"
           placement="left"
-          onClick={this.addWorkspaceQuery}
+          onClick={this.addWorkspaceQuery.bind(this)}
         >
           <i className="fa fa-save" />&nbsp;
         </ButtonWithTooltip>
-        <DropdownButton pullRight title={<i className="fa fa-file-o" />}>
+        <DropdownButton id="ddbtn-export" pullRight title={<i className="fa fa-file-o" />}>
           <MenuItem
             onClick={this.notImplemented}
           >
@@ -167,11 +161,11 @@ const SqlEditor = React.createClass({
           <div>
             <AceEditor
               mode="sql"
-              name={this.props.name}
+              name={this.props.queryEditor.title}
               theme="github"
               minLines={5}
               maxLines={30}
-              onChange={this.textChange}
+              onChange={this.textChange.bind(this)}
               height="200px"
               width="100%"
               editorProps={{ $blockScrolling: true }}
@@ -188,7 +182,7 @@ const SqlEditor = React.createClass({
                     options={this.state.databaseOptions}
                     value={this.props.queryEditor.dbId}
                     autosize={false}
-                    onChange={this.changeDb}
+                    onChange={this.changeDb.bind(this)}
                   />
                 </div>
                 <span className="inlineblock valignTop" style={{ height: '20px' }}>
@@ -207,8 +201,17 @@ const SqlEditor = React.createClass({
         </div>
       </div>
     );
-  },
-});
+  }
+}
+
+SqlEditor.propTypes = {
+  queryEditor: React.PropTypes.object,
+  actions: React.PropTypes.object,
+  latestQuery: React.PropTypes.object,
+};
+
+SqlEditor.defaultProps = {
+};
 
 function mapStateToProps(state) {
   return {

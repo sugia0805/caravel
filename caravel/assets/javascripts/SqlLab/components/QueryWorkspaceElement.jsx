@@ -1,5 +1,5 @@
-import React, { PropTypes } from 'react';
-import { Alert, Button, ButtonGroup } from 'react-bootstrap';
+import React from 'react';
+import { ButtonGroup } from 'react-bootstrap';
 import Link from './Link';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -9,9 +9,9 @@ import shortid from 'shortid';
 // CSS
 import 'react-select/dist/react-select.css';
 
-const QueryWorkspaceElement = React.createClass({
+class QueryWorkspaceElement extends React.Component {
   popTab() {
-    var qe = {
+    const qe = {
       id: shortid.generate(),
       title: this.props.query.title,
       dbId: this.props.query.dbId,
@@ -19,16 +19,15 @@ const QueryWorkspaceElement = React.createClass({
       sql: this.props.query.sql,
     };
     this.props.actions.addQueryEditor(qe);
-  },
+  }
   render() {
-    var metadata = null;
     return (
       <div className="ws-el">
         {this.props.query.title}
         <ButtonGroup className="ws-el-controls pull-right">
           <Link
             className="fa fa-plus-circle"
-            onClick={this.popTab}
+            onClick={this.popTab.bind(this)}
             tooltip="Pop this query in a new tab"
             href="#"
           />
@@ -41,8 +40,16 @@ const QueryWorkspaceElement = React.createClass({
         </ButtonGroup>
       </div>
     );
-  },
-});
+  }
+}
+
+QueryWorkspaceElement.propTypes = {
+  query: React.PropTypes.object,
+  actions: React.PropTypes.object,
+};
+
+QueryWorkspaceElement.defaultProps = {
+};
 
 function mapDispatchToProps(dispatch) {
   return {

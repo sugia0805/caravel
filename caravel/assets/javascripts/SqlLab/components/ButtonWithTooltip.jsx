@@ -1,22 +1,8 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
 import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 
-const ButtonWithTooltip = React.createClass({
-  propTypes: {
-    tooltip: React.PropTypes.string,
-    className: React.PropTypes.string,
-    onClick: React.PropTypes.func,
-    disabled: React.PropTypes.bool,
-    placement: React.PropTypes.string,
-  },
-  getDefaultProps() {
-    return {
-      onClick: () => {},
-      disabled: false,
-      placement: 'top',
-    };
-  },
+class ButtonWithTooltip extends React.Component {
   render() {
     let tooltip = (
       <Tooltip id="tooltip">
@@ -39,7 +25,21 @@ const ButtonWithTooltip = React.createClass({
         </Button>
       </OverlayTrigger>
     );
-  },
-});
+  }
+}
+ButtonWithTooltip.defaultProps = {
+  onClick: () => {},
+  disabled: false,
+  placement: 'top',
+};
+
+ButtonWithTooltip.propTypes = {
+  tooltip: React.PropTypes.string,
+  className: React.PropTypes.string,
+  onClick: React.PropTypes.func,
+  disabled: React.PropTypes.bool,
+  placement: React.PropTypes.string,
+  children: React.PropTypes.element,
+};
 
 export default ButtonWithTooltip;
