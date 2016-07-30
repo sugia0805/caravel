@@ -1,10 +1,10 @@
-import React, { PropTypes } from 'react'
-import { OverlayTrigger, Tooltip } from 'react-bootstrap'
+import React, { PropTypes } from 'react';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import moment from 'moment';
 
 
 const Timer = React.createClass({
-  getInitialState: function() {
+  getInitialState() {
     return { clockStr: '' };
   },
   propTypes: {
@@ -15,13 +15,13 @@ const Timer = React.createClass({
       query: null,
     };
   },
-  componentWillMount: function () {
+  componentWillMount() {
     this.timer = setInterval(this.stopwatch, 50);
   },
-  componentWillUnmount: function() {
+  componentWillUnmount() {
     clearInterval(this.timer);
   },
-  stopwatch: function () {
+  stopwatch() {
     let clockStr = null;
     if (this.props.query) {
       let fromDttm = this.props.query.endDttm || new Date();
@@ -29,14 +29,14 @@ const Timer = React.createClass({
       let duration = fromDttm - moment(this.props.query.startDttm).valueOf();
       duration = moment.utc(duration);
       clockStr = duration.format('HH:mm:ss.SS');
-      this.setState({ clockStr: clockStr });
+      this.setState({ clockStr });
     }
   },
   render() {
     let timerSpan = null;
     if (this.props.query) {
-      timerSpan= (
-        <span className={"label label-warning inlineBlock m-r-5 " + this.props.query.state}>
+      timerSpan = (
+        <span className={'label label-warning inlineBlock m-r-5 ' + this.props.query.state}>
           {this.state.clockStr}
         </span>
       );
@@ -45,4 +45,4 @@ const Timer = React.createClass({
   },
 });
 
-export default Timer
+export default Timer;

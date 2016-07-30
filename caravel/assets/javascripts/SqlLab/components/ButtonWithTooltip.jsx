@@ -1,5 +1,5 @@
-import React, { PropTypes } from 'react'
-import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap'
+import React, { PropTypes } from 'react';
+import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 
 const ButtonWithTooltip = React.createClass({
@@ -25,19 +25,21 @@ const ButtonWithTooltip = React.createClass({
     );
     return (
       <OverlayTrigger
-          overlay={tooltip}
-          delayShow={300}
-          placement={this.props.placement}
-          delayHide={150}>
+        overlay={tooltip}
+        delayShow={300}
+        placement={this.props.placement}
+        delayHide={150}
+      >
         <Button
           onClick={this.props.onClick}
           disabled={this.props.disabled}
-          className={this.props.className}>
+          className={this.props.className}
+        >
             {this.props.children}
         </Button>
       </OverlayTrigger>
     );
-  }
+  },
 });
 
-export default ButtonWithTooltip
+export default ButtonWithTooltip;

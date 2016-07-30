@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import { Button, ButtonGroup, DropdownButton, MenuItem, Label, FormControl, FormGroup } from 'react-bootstrap';
 
 import AceEditor from 'react-ace';
@@ -12,15 +12,15 @@ import * as Actions from '../actions';
 import shortid from 'shortid';
 import Select from 'react-select';
 import ButtonWithTooltip from './ButtonWithTooltip';
-import SouthPane from './SouthPane'
-import Timer from './Timer'
+import SouthPane from './SouthPane';
+import Timer from './Timer';
 
 
 // CSS
 import 'react-select/dist/react-select.css';
 
 const SqlEditor = React.createClass({
-  getInitialState: function() {
+  getInitialState() {
     return {
       sql: this.props.queryEditor.sql,
       autorun: this.props.queryEditor.autorun,
@@ -28,7 +28,7 @@ const SqlEditor = React.createClass({
       databaseLoading: true,
     };
   },
-  componentDidMount: function () {
+  componentDidMount() {
     this.fetchDatabaseOptions();
     if (this.state.autorun) {
       this.setState({ autorun: false });
@@ -36,10 +36,10 @@ const SqlEditor = React.createClass({
       this.startQuery();
     }
   },
-  fetchDatabaseOptions: function(input, callback) {
+  fetchDatabaseOptions(input, callback) {
     this.setState({ databaseLoading: true });
     var that = this;
-    var url = "//" + window.location.host + '/databaseasync/api/read';
+    var url = '//' + window.location.host + '/databaseasync/api/read';
     $.get(url, function (data) {
       var options = data.result.map((db) => {
         return { value: db.id, label: db.database_name };
@@ -50,7 +50,7 @@ const SqlEditor = React.createClass({
     });
     this.render();
   },
-  startQuery: function () {
+  startQuery() {
     var that = this;
     var query = {
       id: shortid.generate(),
@@ -61,27 +61,27 @@ const SqlEditor = React.createClass({
       dbId: this.props.queryEditor.dbId,
       startDttm: new Date(),
     };
-    var url = "//" + window.location.host + "/caravel/sql_json/"
+    var url = '//' + window.location.host + '/caravel/sql_json/';
     var data = {
       sql: this.state.sql,
       database_id: this.props.queryEditor.dbId,
-      json: true
+      json: true,
     };
     this.props.actions.startQuery(query);
     $.ajax({
-      type: "POST",
-      dataType: "json",
+      type: 'POST',
+      dataType: 'json',
       url,
       data,
-      success: function (data) {
+      success(data) {
         try {
           that.props.actions.querySuccess(query, data);
         } catch (e) {
           that.props.actions.queryFailed(query, e);
         }
       },
-      error: function (err, err2) {
-        var msg = "";
+      error(err, err2) {
+        var msg = '';
         try {
           msg = err.responseJSON.msg;
         } catch (e) {
@@ -91,20 +91,20 @@ const SqlEditor = React.createClass({
       },
     });
   },
-  stopQuery: function () {
+  stopQuery() {
     this.props.actions.stopQuery(this.props.latestQuery);
   },
-  changeDb: function (db) {
+  changeDb(db) {
     this.props.actions.queryEditorSetDb(this.props.queryEditor, db.value);
     this.render();
   },
-  textChange: function (text) {
+  textChange(text) {
     this.setState({ sql: text });
   },
   notImplemented() {
-    alert("Not implemented");
+    alert('Not implemented');
   },
-  addWorkspaceQuery: function () {
+  addWorkspaceQuery() {
     this.props.actions.addWorkspaceQuery({
       id: shortid.generate(),
       sql: this.state.sql,
@@ -118,14 +118,14 @@ const SqlEditor = React.createClass({
   },
   render() {
     this.props.callback();
-    var body = (<div/>);
+    var body = (<div />);
     var runButtons = (
       <ButtonGroup className="inline m-r-5">
         <Button onClick={this.startQuery} disabled={!(this.props.queryEditor.dbId)}>
-          <i className="fa fa-table"/> Run
+          <i className="fa fa-table" /> Run
         </Button>
         <Button onClick={this.notImpemented} disabled={!(this.props.queryEditor.dbId)}>
-          <i className="fa fa-line-chart"/> Visualize
+          <i className="fa fa-line-chart" /> Visualize
         </Button>
       </ButtonGroup>
     );
@@ -133,26 +133,29 @@ const SqlEditor = React.createClass({
       runButtons = (
       <ButtonGroup className="inline m-r-5">
         <Button onClick={this.stopQuery}>
-          <a className="fa fa-stop"/> Stop
+          <a className="fa fa-stop" /> Stop
         </Button>
       </ButtonGroup>);
     }
     var rightButtons = (
       <ButtonGroup className="inlineblock">
         <ButtonWithTooltip
-            tooltip="Save this query in your workspace"
-            placement="left"
-            onClick={this.addWorkspaceQuery}>
-          <i className="fa fa-save"/>&nbsp;
+          tooltip="Save this query in your workspace"
+          placement="left"
+          onClick={this.addWorkspaceQuery}
+        >
+          <i className="fa fa-save" />&nbsp;
         </ButtonWithTooltip>
-        <DropdownButton pullRight title={<i className="fa fa-file-o"/>}>
+        <DropdownButton pullRight title={<i className="fa fa-file-o" />}>
           <MenuItem
-              onClick={this.notImplemented}>
-            <i className="fa fa-file-text-o"/> export to .csv
+            onClick={this.notImplemented}
+          >
+            <i className="fa fa-file-text-o" /> export to .csv
           </MenuItem>
           <MenuItem
-              onClick={this.notImplemented}>
-            <i className="fa fa-file-code-o"/> export to .json
+            onClick={this.notImplemented}
+          >
+            <i className="fa fa-file-code-o" /> export to .json
           </MenuItem>
         </DropdownButton>
 
@@ -171,9 +174,10 @@ const SqlEditor = React.createClass({
               onChange={this.textChange}
               height="200px"
               width="100%"
-              editorProps={{$blockScrolling: true}}
-              enableBasicAutocompletion={true}
-              value={this.state.sql}/>
+              editorProps={{ $blockScrolling: true }}
+              enableBasicAutocompletion
+              value={this.state.sql}
+            />
             <div className="clearfix sql-toolbar padded">
               <div className="pull-left">
                 {runButtons}
@@ -188,7 +192,7 @@ const SqlEditor = React.createClass({
                   />
                 </div>
                 <span className="inlineblock valignTop" style={{ height: '20px' }}>
-                  <input type="text" className="form-control" placeholder="CREATE TABLE AS"/>
+                  <input type="text" className="form-control" placeholder="CREATE TABLE AS" />
                 </span>
               </div>
               <div className="pull-right">
@@ -202,20 +206,20 @@ const SqlEditor = React.createClass({
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  },
 });
 
 function mapStateToProps(state) {
   return {
-    queries: state.queries
+    queries: state.queries,
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    actions: bindActionCreators(Actions, dispatch)
+    actions: bindActionCreators(Actions, dispatch),
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SqlEditor)
+export default connect(mapStateToProps, mapDispatchToProps)(SqlEditor);

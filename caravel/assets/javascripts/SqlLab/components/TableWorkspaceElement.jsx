@@ -1,17 +1,17 @@
-import React, { PropTypes } from 'react'
-import { Alert, Button, ButtonGroup } from 'react-bootstrap'
-import Link from './Link'
+import React, { PropTypes } from 'react';
+import { Alert, Button, ButtonGroup } from 'react-bootstrap';
+import Link from './Link';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as Actions from '../actions';
-import shortid from 'shortid'
+import shortid from 'shortid';
 
 // CSS
 import 'react-select/dist/react-select.css';
 
 const TableWorkspaceElement = React.createClass({
-  selectStar: function () {
-    var cols = "";
+  selectStar() {
+    var cols = '';
     var that = this;
     this.props.table.columns.forEach(function (col, i) {
       cols += col.name;
@@ -29,22 +29,24 @@ const TableWorkspaceElement = React.createClass({
     };
     this.props.actions.addQueryEditor(qe);
   },
-  render: function () {
+  render() {
     var metadata = null;
     if (!this.props.table.expanded) {
       var buttonToggle = (
         <Link
-            href="#"
-            onClick={this.props.actions.expandTable.bind(this, this.props.table)}
-            placement="right"
-            tooltip="Collapse the table's structure information">
-          <i className="fa fa-minus"/> {this.props.table.name}
+          href="#"
+          onClick={this.props.actions.expandTable.bind(this, this.props.table)}
+          placement="right"
+          tooltip="Collapse the table's structure information"
+        >
+          <i className="fa fa-minus" /> {this.props.table.name}
         </Link>
       );
       metadata = this.props.table.columns.map((col) => {
         return (
           <div
-              className="clearfix">
+            className="clearfix"
+          >
             <span className="pull-left">{col.name}</span>
             <span className="pull-right">{col.type}</span>
           </div>
@@ -56,11 +58,12 @@ const TableWorkspaceElement = React.createClass({
     } else {
       var buttonToggle = (
         <Link
-            href="#"
-            onClick={this.props.actions.collapseTable.bind(this, this.props.table)}
-            placement="right"
-            tooltip="Expand the table's structure information">
-          <i className="fa fa-plus"/> {this.props.table.name}
+          href="#"
+          onClick={this.props.actions.collapseTable.bind(this, this.props.table)}
+          placement="right"
+          tooltip="Expand the table's structure information"
+        >
+          <i className="fa fa-plus" /> {this.props.table.name}
         </Link>
       );
     }
@@ -69,28 +72,28 @@ const TableWorkspaceElement = React.createClass({
         {buttonToggle}
         <ButtonGroup className="ws-el-controls pull-right">
           <Link
-              className="fa fa-play"
-              onClick={this.selectStar}
-              tooltip="Run query in a new tab"
-              href="#"
+            className="fa fa-play"
+            onClick={this.selectStar}
+            tooltip="Run query in a new tab"
+            href="#"
           />
           <Link
-              className="fa fa-trash"
-              onClick={this.props.actions.removeTable.bind(this, this.props.table)}
-              tooltip="Remove from workspace"
-              href="#"
+            className="fa fa-trash"
+            onClick={this.props.actions.removeTable.bind(this, this.props.table)}
+            tooltip="Remove from workspace"
+            href="#"
           />
         </ButtonGroup>
         {metadata}
       </div>
-    )
-  }
+    );
+  },
 });
 
 function mapDispatchToProps(dispatch) {
   return {
-    actions: bindActionCreators(Actions, dispatch)
+    actions: bindActionCreators(Actions, dispatch),
   };
 }
-export default connect(null, mapDispatchToProps)(TableWorkspaceElement)
+export default connect(null, mapDispatchToProps)(TableWorkspaceElement);
 

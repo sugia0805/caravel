@@ -1,19 +1,19 @@
-import React, { PropTypes } from 'react'
-import { Alert, Button, ButtonGroup, Label, Modal } from 'react-bootstrap'
-import Link from './Link'
+import React, { PropTypes } from 'react';
+import { Alert, Button, ButtonGroup, Label, Modal } from 'react-bootstrap';
+import Link from './Link';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as Actions from '../actions';
-import TableWorkspaceElement from './TableWorkspaceElement'
-import QueryWorkspaceElement from './QueryWorkspaceElement'
-import shortid from 'shortid'
-import Select from 'react-select'
+import TableWorkspaceElement from './TableWorkspaceElement';
+import QueryWorkspaceElement from './QueryWorkspaceElement';
+import shortid from 'shortid';
+import Select from 'react-select';
 
 // CSS
 import 'react-select/dist/react-select.css';
 
 const Workspace = React.createClass({
-  getInitialState: function() {
+  getInitialState() {
     return {
       tableName: null,
       showAddTableModal: false,
@@ -22,28 +22,28 @@ const Workspace = React.createClass({
       tableLoading: false,
     };
   },
-  getTableOptions: function(input, callback) {
+  getTableOptions(input, callback) {
     var that = this;
     var url = `//${window.location.host}/tableasync/api/read?_oc_DatabaseAsync=database_name&_od_DatabaseAsync=asc`;
     $.get(url, function (data) {
       var options = [];
-      for (var i=0; i<data.pks.length; i++) {
+      for (var i = 0; i < data.pks.length; i++) {
         options.push({ value: data.pks[i], label: data.result[i].table_name });
       }
       callback(null, {
-        options: options,
-        cache: false
+        options,
+        cache: false,
       });
     });
   },
-  changeDb: function (db) {
+  changeDb(db) {
     this.setState({ tableLoading: true });
     var that = this;
     var url = `//${window.location.host}/databasetablesasync/api/read?_flt_0_id=${db.value}`;
     $.get(url, function (data) {
       var tables = data.result[0].all_table_names;
       var options = [];
-      for (var i=0; i<tables.length; i++) {
+      for (var i = 0; i < tables.length; i++) {
         options.push({ value: tables[i], label: tables[i] });
       }
       that.setState({ tableOptions: options });
@@ -52,9 +52,9 @@ const Workspace = React.createClass({
     });
     this.render();
   },
-  changeTable: function (tableOpt) {
+  changeTable(tableOpt) {
     var tableName = tableOpt.value;
-    this.setState({ tableName: tableName });
+    this.setState({ tableName });
     var that = this;
     var url = `//${window.location.host}/caravel/table/${this.props.workspaceDatabase.id}/${tableName}/`;
     $.get(url, function (data) {
@@ -65,22 +65,22 @@ const Workspace = React.createClass({
         name: data.name,
         columns: data.columns,
         expanded: true,
-        showPopup: false
+        showPopup: false,
       });
       that.render();
     });
     this.render();
   },
-  componentDidMount: function () {
+  componentDidMount() {
     this.fetchDatabaseOptions();
   },
-  showAddTableModal: function () {
+  showAddTableModal() {
     this.setState({ showAddTableModal: true });
   },
-  hideAddTableModal: function () {
+  hideAddTableModal() {
     this.setState({ showAddTableModal: false });
   },
-  fetchDatabaseOptions: function(input, callback) {
+  fetchDatabaseOptions(input, callback) {
     this.setState({ databaseLoading: true });
     var that = this;
     var url = `//${window.location.host}/databaseasync/api/read`;
@@ -94,21 +94,21 @@ const Workspace = React.createClass({
     });
     this.render();
   },
-  render: function () {
+  render() {
     var tableElems = (
       <Alert bsStyle="info">
         To add a table to your workspace, click the plus [+] sign above.
       </Alert>);
     if (this.props.tables.length > 0) {
       tableElems = this.props.tables.map(function (table) {
-        return <TableWorkspaceElement key={table.id} table={table}/>;
+        return <TableWorkspaceElement key={table.id} table={table} />;
       });
     }
 
     if (this.props.workspaceQueries.length > 0) {
       var queryElements = this.props.workspaceQueries.map((q) => {
-        return(
-          <QueryWorkspaceElement query={q}/>
+        return (
+          <QueryWorkspaceElement query={q} />
         );
       });
     } else {
@@ -138,7 +138,7 @@ const Workspace = React.createClass({
                 autosize={false}
               />
             </div>
-            <br/>
+            <br />
             <div>
               <h6>Tables:</h6>
               <Select
@@ -150,7 +150,8 @@ const Workspace = React.createClass({
                 className="p-t-10"
                 value={this.state.tableName}
                 onChange={this.changeTable}
-                options={this.state.tableOptions}/>
+                options={this.state.tableOptions}
+              />
             </div>
         </Modal.Body>
       </Modal>
@@ -160,32 +161,33 @@ const Workspace = React.createClass({
         {modal}
         <div className="panel-heading">
           <h5>
-            <i className="fa fa-flask"/>
-            SQL Lab  <Label bsStyle="danger">ALPHA</Label>
+            <i className="fa fa-flask" />
+            SQL Lab            <Label bsStyle="danger">ALPHA</Label>
           </h5>
         </div>
         <div className="panel-body">
           <div>
             <h6>
-              Tables / Views <Link 
-                  className="fa fa-plus-circle"
-                  onClick={this.showAddTableModal}/>
+              Tables / Views <Link
+                className="fa fa-plus-circle"
+                onClick={this.showAddTableModal}
+              />
             </h6>
             <div>
               {tableElems}
             </div>
-            <hr/>
+            <hr />
 
             <h6>Queries</h6>
             <div>
               {queryElements}
             </div>
-            <hr/>
+            <hr />
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  },
 });
 
 function mapStateToProps(state) {
@@ -197,8 +199,8 @@ function mapStateToProps(state) {
 }
 function mapDispatchToProps(dispatch) {
   return {
-    actions: bindActionCreators(Actions, dispatch)
+    actions: bindActionCreators(Actions, dispatch),
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Workspace)
+export default connect(mapStateToProps, mapDispatchToProps)(Workspace);

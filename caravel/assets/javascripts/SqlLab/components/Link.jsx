@@ -1,5 +1,5 @@
-import React, { PropTypes } from 'react'
-import { OverlayTrigger, Tooltip } from 'react-bootstrap'
+import React, { PropTypes } from 'react';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 
 const Link = React.createClass({
@@ -29,24 +29,26 @@ const Link = React.createClass({
       <a
         href={this.props.href}
         onClick={this.props.onClick}
-        className={"Link " + this.props.className}>
+        className={'Link ' + this.props.className}
+      >
           {this.props.children}
       </a>
     );
     if (this.props.tooltip) {
       return (
         <OverlayTrigger
-            overlay={tooltip}
-            placement={this.props.placement}
-            delayShow={300}
-            delayHide={150}>
+          overlay={tooltip}
+          placement={this.props.placement}
+          delayShow={300}
+          delayHide={150}
+        >
           {link}
         </OverlayTrigger>
       );
     } else {
       return link;
     }
-  }
+  },
 });
 
-export default Link
+export default Link;

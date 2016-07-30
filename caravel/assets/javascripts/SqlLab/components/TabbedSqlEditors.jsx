@@ -1,30 +1,30 @@
-import React from 'react'
+import React from 'react';
 import { Button, DropdownButton, MenuItem, Panel, Tab, Tabs } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as Actions from '../actions';
-import SqlEditor from './SqlEditor'
-import shortid from 'shortid'
-import Link from './Link'
+import SqlEditor from './SqlEditor';
+import shortid from 'shortid';
+import Link from './Link';
 
 var queryCount = 1;
 
 const QueryEditors = React.createClass({
-  renameTab: function (qe) {
-    var newTitle = prompt("Enter a new title for the tab");
+  renameTab(qe) {
+    var newTitle = prompt('Enter a new title for the tab');
     if (newTitle) {
       this.props.actions.queryEditorSetTitle(qe, newTitle);
     }
   },
-  newQueryEditor: function () {
+  newQueryEditor() {
     queryCount++;
     var dbId = (this.props.workspaceDatabase) ? this.props.workspaceDatabase.id : null;
     var qe = {
       id: shortid.generate(),
       title: `Query ${queryCount}`,
-      dbId: dbId,
+      dbId,
       autorun: false,
-      sql: 'SELECT ...'
+      sql: 'SELECT ...',
     };
     this.props.actions.addQueryEditor(qe);
   },
@@ -35,7 +35,7 @@ const QueryEditors = React.createClass({
       this.props.actions.setActiveQueryEditor({ id: key });
     }
   },
-  render: function () {
+  render() {
     var that = this;
     var editors = this.props.queryEditors.map(function (qe, i) {
       var latestQuery = null;
@@ -47,11 +47,12 @@ const QueryEditors = React.createClass({
       var state = (latestQuery) ? latestQuery.state : '';
       var tabTitle = (
         <div>
-          <div className={"circle " + state} /> {qe.title} {' '}
+          <div className={'circle ' + state} /> {qe.title} {' '}
           <DropdownButton
-              bsSize="small"
-              className="no-shadow"
-              id="bg-vertical-dropdown-1">
+            bsSize="small"
+            className="no-shadow"
+            id="bg-vertical-dropdown-1"
+          >
             <MenuItem eventKey="1" onClick={that.props.actions.removeQueryEditor.bind(that, qe)}>
               <i className="fa fa-close" /> close tab
             </MenuItem>
@@ -65,23 +66,25 @@ const QueryEditors = React.createClass({
         <Tab
           key={qe.id}
           title={tabTitle}
-          eventKey={qe.id}>
+          eventKey={qe.id}
+        >
             <Panel className="nopadding">
               <SqlEditor
                 name={qe.id}
                 queryEditor={qe}
                 latestQuery={latestQuery}
-                callback={that.render.bind(that)}/>
+                callback={that.render.bind(that)}
+              />
             </Panel>
         </Tab>);
     });
     return (
-      <Tabs bsStyle="pills" activeKey={this.props.tabHistory[this.props.tabHistory.length-1]} onSelect={this.handleSelect}>
+      <Tabs bsStyle="pills" activeKey={this.props.tabHistory[this.props.tabHistory.length - 1]} onSelect={this.handleSelect}>
         {editors}
-        <Tab title={<div><i className="fa fa-plus-circle"/>&nbsp;</div>} eventKey="add_tab"/>
+        <Tab title={<div><i className="fa fa-plus-circle" />&nbsp;</div>} eventKey="add_tab" />
       </Tabs>
     );
-  }
+  },
 });
 
 function mapStateToProps(state) {
@@ -94,8 +97,8 @@ function mapStateToProps(state) {
 }
 function mapDispatchToProps(dispatch) {
   return {
-    actions: bindActionCreators(Actions, dispatch)
+    actions: bindActionCreators(Actions, dispatch),
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(QueryEditors)
+export default connect(mapStateToProps, mapDispatchToProps)(QueryEditors);
