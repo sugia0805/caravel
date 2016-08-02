@@ -18,6 +18,7 @@ class ButtonWithTooltip extends React.Component {
       >
         <Button
           onClick={this.props.onClick}
+          bsStyle={this.props.bsStyle}
           disabled={this.props.disabled}
           className={this.props.className}
         >
@@ -31,15 +32,17 @@ ButtonWithTooltip.defaultProps = {
   onClick: () => {},
   disabled: false,
   placement: 'top',
+  bsStyle: 'default',
 };
 
 ButtonWithTooltip.propTypes = {
-  tooltip: React.PropTypes.string,
-  className: React.PropTypes.string,
-  onClick: React.PropTypes.func,
-  disabled: React.PropTypes.bool,
-  placement: React.PropTypes.string,
+  bsStyle: React.PropTypes.string,
   children: React.PropTypes.element,
+  className: React.PropTypes.string,
+  disabled: React.PropTypes.bool,
+  onClick: React.PropTypes.func,
+  placement: React.PropTypes.string,
+  tooltip: React.PropTypes.string,
 };
 
 export default ButtonWithTooltip;

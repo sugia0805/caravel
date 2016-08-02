@@ -49,7 +49,7 @@ class QueryEditors extends React.Component {
           <div className={'circle ' + state} /> {qe.title} {' '}
           <DropdownButton
             bsSize="small"
-            id={"ddbtn-tab-" + i}
+            id={'ddbtn-tab-' + i}
             className="no-shadow"
             id="bg-vertical-dropdown-1"
           >
@@ -78,7 +78,7 @@ class QueryEditors extends React.Component {
     });
     return (
       <Tabs
-        bsStyle="pills"
+        bsStyle="tabs"
         activeKey={this.props.tabHistory[this.props.tabHistory.length - 1]}
         onSelect={this.handleSelect.bind(this)}
       >

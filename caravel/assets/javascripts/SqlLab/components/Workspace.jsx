@@ -69,7 +69,6 @@ class Workspace extends React.Component {
     });
   }
   showAddTableModal() {
-    console.log(this);
     this.setState({ showAddTableModal: true });
   }
   hideAddTableModal() {
@@ -149,15 +148,15 @@ class Workspace extends React.Component {
       <div className="panel panel-default Workspace">
         {modal}
         <div className="panel-heading">
-          <h5>
+          <h6 className="m-r-10">
             <i className="fa fa-flask" />
             SQL Lab <Label bsStyle="danger">ALPHA</Label>
-          </h5>
+          </h6>
         </div>
         <div className="panel-body">
           <div>
             <h6>
-              Tables / Views <Link
+              <i className="fa fa-table fa-lg" /> Tables / Views <Link
                 className="fa fa-plus-circle"
                 href="#"
                 onClick={this.showAddTableModal.bind(this)}
@@ -168,7 +167,12 @@ class Workspace extends React.Component {
             </div>
             <hr />
 
-            <h6>Queries</h6>
+            <h6>
+              <span className="fa-stack">
+                <i className="fa fa-database fa-stack-lg"></i>
+                <i className="fa fa-search fa-stack-1x"></i>
+              </span> Queries
+            </h6>
             <div>
               {queryElements}
             </div>

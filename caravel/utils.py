@@ -202,8 +202,11 @@ def init(caravel):
         if perm.permission.name == 'datasource_access':
             continue
         if perm.view_menu and perm.view_menu.name not in (
-                'UserDBModelView', 'RoleModelView', 'ResetPasswordView',
-                'Security'):
+                'ResetPasswordView',
+                'RoleModelView',
+                'Security',
+                'UserDBModelView',
+                'SQL Lab'):
             sm.add_permission_role(alpha, perm)
         sm.add_permission_role(admin, perm)
     gamma = sm.add_role("Gamma")
@@ -216,6 +219,7 @@ def init(caravel):
                     'ResetPasswordView',
                     'RoleModelView',
                     'UserDBModelView',
+                    'SQL Lab',
                     'Security') and
                 perm.permission.name not in (
                     'all_datasource_access',

@@ -41,7 +41,7 @@ Link.propTypes = {
   placement: React.PropTypes.string,
   children: React.PropTypes.object,
 };
-Link.defaultProps ={
+Link.defaultProps = {
   disabled: false,
   href: '#',
   tooltip: null,

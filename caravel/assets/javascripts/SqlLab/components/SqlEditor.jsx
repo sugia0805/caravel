@@ -29,8 +29,10 @@ class SqlEditor extends React.Component {
       autorun: props.queryEditor.autorun,
     };
   }
-  componentDidMount() {
+  componentWillMount() {
     this.fetchDatabaseOptions();
+  }
+  componentDidMount() {
     if (this.state.autorun) {
       this.setState({ autorun: false });
       this.props.actions.queryEditorSetAutorun(this.props.queryEditor, false);
@@ -84,7 +86,6 @@ class SqlEditor extends React.Component {
         } catch (e) {
           msg = (err.responseText) ? err.responseText : e;
         }
-        console.log([err, msg]);
         that.props.actions.queryFailed(query, msg);
       },
     });
@@ -116,9 +117,6 @@ class SqlEditor extends React.Component {
       <ButtonGroup className="inline m-r-5">
         <Button onClick={this.startQuery.bind(this)} disabled={!(this.props.queryEditor.dbId)}>
           <i className="fa fa-table" /> Run
-        </Button>
-        <Button onClick={this.notImpemented} disabled={!(this.props.queryEditor.dbId)}>
-          <i className="fa fa-line-chart" /> Visualize
         </Button>
       </ButtonGroup>
     );

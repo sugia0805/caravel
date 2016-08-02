@@ -21,7 +21,7 @@ class Timer extends React.Component {
       fromDttm = moment(fromDttm);
       let duration = fromDttm - moment(this.props.query.startDttm).valueOf();
       duration = moment.utc(duration);
-      let clockStr = duration.format('HH:mm:ss.SS');
+      const clockStr = duration.format('HH:mm:ss.SS');
       this.setState({ clockStr });
     }
   }

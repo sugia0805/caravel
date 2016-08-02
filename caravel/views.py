@@ -1347,6 +1347,8 @@ class Caravel(BaseCaravelView):
             data = {
                 'columns': [c for c in df.columns],
                 'data': df.to_dict(orient='records'),
+                'ydata_tpe.to_dict': {
+                    k: '{}'.format(v) for k, v in df.dtypes.to_dict().items()},
             }
             return json.dumps(data, default=utils.json_int_dttm_ser, allow_nan=False)
 
