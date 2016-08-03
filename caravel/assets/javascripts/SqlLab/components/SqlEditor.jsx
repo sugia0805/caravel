@@ -23,11 +23,57 @@ class SqlEditor extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      databaseOptions: [],
-      databaseLoading: true,
-      sql: props.queryEditor.sql,
       autorun: props.queryEditor.autorun,
+      databaseLoading: true,
+      databaseOptions: [],
+      sql: props.queryEditor.sql,
+      tableLoading: false,
+      tableOptions: [],
     };
+  }
+  componentDidMount() {
+    this.fetchDatabaseOptions();
+  }
+  getTableOptions(input, callback) {
+    const url = '/tableasync/api/read?_oc_DatabaseAsync=database_name&_od_DatabaseAsync=asc';
+    $.get(url, function (data) {
+      const options = [];
+      for (let i = 0; i < data.pks.length; i++) {
+        options.push({ value: data.pks[i], label: data.result[i].table_name });
+      }
+      callback(null, {
+        options,
+        cache: false,
+      });
+    });
+  }
+  changeDb(db) {
+    const val = (db) ? db.value : null;
+    this.props.actions.queryEditorSetDb(this.props.queryEditor, val);
+    if (!(db)) {
+      that.setState({ tableOptions: [] });
+      return;
+    }
+    this.setState({ tableLoading: true });
+    const that = this;
+    const url = `//${window.location.host}/databasetablesasync/api/read?_flt_0_id=${db.value}`;
+    $.get(url, function (data) {
+      const tables = data.result[0].all_table_names;
+      const options = tables.map((table) => ({ value: table, label: table }));
+      that.setState({ tableOptions: options });
+      that.setState({ tableLoading: false });
+      that.props.actions.setWorkspaceDb(data.result[0]);
+    });
+  }
+  fetchDatabaseOptions() {
+    this.setState({ databaseLoading: true });
+    const that = this;
+    const url = '/databaseasync/api/read';
+    $.get(url, function (data) {
+      const options = data.result.map((db) => ({ value: db.id, label: db.database_name }));
+      that.setState({ databaseOptions: options });
+      that.setState({ databaseLoading: false });
+    });
   }
   componentWillMount() {
     this.fetchDatabaseOptions();
@@ -38,16 +84,6 @@ class SqlEditor extends React.Component {
       this.props.actions.queryEditorSetAutorun(this.props.queryEditor, false);
       this.startQuery();
     }
-  }
-  fetchDatabaseOptions() {
-    this.setState({ databaseLoading: true });
-    const that = this;
-    const url = '//' + window.location.host + '/databaseasync/api/read';
-    $.get(url, function (data) {
-      const options = data.result.map((db) => ({ value: db.id, label: db.database_name }));
-      that.setState({ databaseOptions: options });
-      that.setState({ databaseLoading: false });
-    });
   }
   startQuery() {
     const that = this;
@@ -93,14 +129,26 @@ class SqlEditor extends React.Component {
   stopQuery() {
     this.props.actions.stopQuery(this.props.latestQuery);
   }
-  changeDb(db) {
-    this.props.actions.queryEditorSetDb(this.props.queryEditor, db.value);
-  }
   textChange(text) {
     this.setState({ sql: text });
   }
   notImplemented() {
     alert('Not implemented');
+  }
+  changeTable(tableOpt) {
+    const tableName = tableOpt.value;
+    const that = this;
+    const url = `/caravel/table/${this.props.database.id}/${tableName}/`;
+    $.get(url, function (data) {
+      that.props.actions.queryEditorAddTable({
+        id: shortid.generate(),
+        dbId: that.props.workspaceDatabase.id,
+        name: data.name,
+        columns: data.columns,
+        expanded: true,
+        showPopup: false,
+      });
+    });
   }
   addWorkspaceQuery() {
     this.props.actions.addWorkspaceQuery({
@@ -153,10 +201,53 @@ class SqlEditor extends React.Component {
 
       </ButtonGroup>
     );
+    const editorTopBar = (
+      <div className="clearfix sql-toolbar padded">
+          <div className="inlineblock pull-left m-r-5">
+            <Select
+              name="select-db"
+              placeholder="[Database]"
+              options={this.state.databaseOptions}
+              value={this.props.queryEditor.dbId}
+              autosize={false}
+              onChange={this.changeDb.bind(this)}
+            />
+          </div>
+          <div className="inlineblock pull-left m-r-5">
+            <Select
+              disabled={(this.props.workspaceDatabase === null)}
+              ref="selectTable"
+              name="select-table"
+              isLoading={this.state.tableLoading}
+              placeholder="Add a table"
+              className="p-t-10"
+              autosize={false}
+              value={this.state.tableName}
+              onChange={this.changeTable.bind(this)}
+              options={this.state.tableOptions}
+            />
+        </div>
+      </div>
+    );
+    const editorBottomBar = (
+      <div className="clearfix sql-toolbar padded">
+        <div className="pull-left">
+          {runButtons}
+          <span className="inlineblock valignTop" style={{ height: '20px' }}>
+            <input type="text" className="form-control" placeholder="CREATE TABLE AS" />
+          </span>
+        </div>
+        <div className="pull-right">
+          <Timer query={this.props.latestQuery} />
+          {rightButtons}
+        </div>
+      </div>
+    );
     return (
       <div className="SqlEditor">
         <div>
           <div>
+            {editorTopBar}
             <AceEditor
               mode="sql"
               name={this.props.queryEditor.title}
@@ -170,28 +261,7 @@ class SqlEditor extends React.Component {
               enableBasicAutocompletion
               value={this.state.sql}
             />
-            <div className="clearfix sql-toolbar padded">
-              <div className="pull-left">
-                {runButtons}
-                <div className="inlineblock m-r-5">
-                  <Select
-                    name="select-db"
-                    placeholder="[Database]"
-                    options={this.state.databaseOptions}
-                    value={this.props.queryEditor.dbId}
-                    autosize={false}
-                    onChange={this.changeDb.bind(this)}
-                  />
-                </div>
-                <span className="inlineblock valignTop" style={{ height: '20px' }}>
-                  <input type="text" className="form-control" placeholder="CREATE TABLE AS" />
-                </span>
-              </div>
-              <div className="pull-right">
-                <Timer query={this.props.latestQuery} />
-                {rightButtons}
-              </div>
-            </div>
+            {editorBottomBar}
             <div className="padded">
               <SouthPane latestQuery={this.props.latestQuery} sqlEditor={this} />
             </div>
