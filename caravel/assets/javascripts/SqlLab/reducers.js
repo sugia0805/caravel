@@ -1,5 +1,24 @@
 import moment from 'moment';
+import shortid from 'shortid';
 import * as actions from './actions';
+
+const defaultQueryEditor = {
+  id: shortid.generate(),
+  title: 'Query 1',
+  sql: 'SELECT *\nFROM\nWHERE',
+  latestQueryId: null,
+  autorun: false,
+  dbId: null,
+};
+
+export const initialState = {
+  queryEditors: [defaultQueryEditor],
+  queries: [],
+  tables: [],
+  workspaceQueries: [],
+  tabHistory: [defaultQueryEditor.id],
+};
+
 
 function alterInArr(state, arrKey, obj, alterations) {
   // Finds an item in an array in the state and replaces it with a
@@ -32,7 +51,7 @@ function addToArr(state, arrKey, obj) {
   return Object.assign({}, state, newState);
 }
 
-function sqlAnvilReducer(state, action) {
+export const sqlLabReducer = function (state, action) {
   const actionHandlers = {
     [actions.ADD_QUERY_EDITOR]() {
       const tabHistory = state.tabHistory.slice();
@@ -51,6 +70,9 @@ function sqlAnvilReducer(state, action) {
     },
     [actions.REMOVE_QUERY]() {
       return removeFromArr(state, 'queries', action.query);
+    },
+    [actions.RESET_STATE]() {
+      return Object.assign({}, initialState);
     },
     [actions.ADD_TABLE]() {
       return addToArr(state, 'tables', action.table);
@@ -81,22 +103,6 @@ function sqlAnvilReducer(state, action) {
       };
       return alterInArr(state, 'queries', action.query, alts);
     },
-    [actions.SET_WORKSPACE_DB]() {
-      // Auto selecting database for queryEditors that don't have one yet
-      let oneChanged = false;
-      let newState = Object.assign({}, state);
-      const queryEditors = state.queryEditors.map((qe) => {
-        if (qe.dbId === null) {
-          oneChanged = true;
-          return Object.assign({}, qe, { dbId: action.db.id });
-        }
-        return qe;
-      });
-      if (oneChanged) {
-        newState = Object.assign({}, newState, { queryEditors });
-      }
-      return Object.assign({}, newState, { workspaceDatabase: action.db });
-    },
     [actions.QUERY_FAILED]() {
       const alts = { state: 'failed', msg: action.msg, endDttm: moment() };
       return alterInArr(state, 'queries', action.query, alts);
@@ -113,8 +119,14 @@ function sqlAnvilReducer(state, action) {
     [actions.QUERY_EDITOR_SETDB]() {
       return alterInArr(state, 'queryEditors', action.queryEditor, { dbId: action.dbId });
     },
+    [actions.QUERY_EDITOR_SET_SCHEMA]() {
+      return alterInArr(state, 'queryEditors', action.queryEditor, { schema: action.schema });
+    },
     [actions.QUERY_EDITOR_SET_TITLE]() {
       return alterInArr(state, 'queryEditors', action.queryEditor, { title: action.title });
+    },
+    [actions.QUERY_EDITOR_SET_SQL]() {
+      return alterInArr(state, 'queryEditors', action.queryEditor, { sql: action.sql });
     },
     [actions.QUERY_EDITOR_SET_AUTORUN]() {
       return alterInArr(state, 'queryEditors', action.queryEditor, { autorun: action.autorun });
@@ -131,5 +143,3 @@ function sqlAnvilReducer(state, action) {
   }
   return state;
 }
-
-export default sqlAnvilReducer;

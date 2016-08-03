@@ -10,10 +10,19 @@ class Timer extends React.Component {
     };
   }
   componentWillMount() {
-    this.timer = setInterval(this.stopwatch, 1000);
+    this.startTimer();
   }
   componentWillUnmount() {
+    this.stopTimer();
+  }
+  startTimer() {
+    if (!(this.timer)) {
+      this.timer = setInterval(this.stopwatch.bind(this), 30);
+    }
+  }
+  stopTimer() {
     clearInterval(this.timer);
+    this.timer = null;
   }
   stopwatch() {
     if (this.props && this.props.query) {
@@ -23,9 +32,15 @@ class Timer extends React.Component {
       duration = moment.utc(duration);
       const clockStr = duration.format('HH:mm:ss.SS');
       this.setState({ clockStr });
+      if (this.props.query.state !== 'running') {
+        this.stopTimer();
+      }
     }
   }
   render() {
+    if (this.props.query && this.props.query.state === 'running') {
+      this.startTimer();
+    }
     let timerSpan = null;
     if (this.props && this.props.query) {
       timerSpan = (

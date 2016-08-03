@@ -428,7 +428,7 @@ class DatabaseAsync(DatabaseView):
 appbuilder.add_view_no_menu(DatabaseAsync)
 
 class DatabaseTablesAsync(DatabaseView):
-    list_columns = ['id', 'all_table_names']
+    list_columns = ['id', 'all_table_names', 'all_schema_names']
 
 appbuilder.add_view_no_menu(DatabaseTablesAsync)
 
@@ -1057,6 +1057,25 @@ class Caravel(BaseCaravelView):
 
     @api
     @has_access_api
+    @expose("/tables/<db_id>/<schema>")
+    def tables(self, db_id, schema):
+        """endpoint to power the calendar heatmap on the welcome page"""
+        schema = None if schema == 'null' else schema
+        database = (
+            db.session
+            .query(models.Database)
+            .filter_by(id=db_id)
+            .one()
+        )
+        payload = {
+            'tables': database.all_table_names(schema),
+            'views': database.all_view_names(schema),
+        }
+        return Response(
+            json.dumps(payload), mimetype="application/json")
+
+    @api
+    @has_access_api
     @expose("/save_dash/<dashboard_id>/", methods=['GET', 'POST'])
     def save_dash(self, dashboard_id):
         """Save a dashboard's metadata"""
@@ -1207,13 +1226,15 @@ class Caravel(BaseCaravelView):
             db=mydb)
 
     @has_access
-    @expose("/table/<database_id>/<table_name>/")
+    @expose("/table/<database_id>/<table_name>/<schema>/")
     @log_this
-    def table(self, database_id, table_name):
+    def table(self, database_id, table_name, schema):
+        schema = None if schema == 'null' else schema
         mydb = db.session.query(models.Database).filter_by(id=database_id).one()
         cols = []
+        t = mydb.get_columns(table_name, schema)
         try:
-            t = mydb.get_columns(table_name)
+            t = mydb.get_columns(table_name, schema)
         except Exception as e:
             return Response(
                 json.dumps({'error': utils.error_msg_from_exception(e)}),
@@ -1308,6 +1329,7 @@ class Caravel(BaseCaravelView):
         limit = 1000
         sql = request.form.get('sql')
         database_id = request.form.get('database_id')
+        schema = request.form.get('schema')
         mydb = session.query(models.Database).filter_by(id=database_id).first()
 
         if (
@@ -1330,7 +1352,7 @@ class Caravel(BaseCaravelView):
                 )
                 sql = str(qry.compile(eng, compile_kwargs={"literal_binds": True}))
             try:
-                df = pd.read_sql_query(sql=sql, con=eng)
+                df = mydb.get_df(sql, schema)
                 df = df.fillna(0)  # TODO make sure NULL
             except Exception as e:
                 error_msg = utils.error_msg_from_exception(e)

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, FormGroup, Radio } from 'react-bootstrap';
+import { Alert, Modal } from 'react-bootstrap';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -14,7 +14,6 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { github } from 'react-syntax-highlighter/dist/styles';
 
 import Link from './Link';
-import ButtonWithTooltip from './ButtonWithTooltip';
 
 // TODO move to CSS
 const STATE_COLOR_MAP = {
@@ -38,9 +37,7 @@ class QueryTable extends React.Component {
     this.setState({ showVisualizeModal: true });
     this.state.activeQuery = query;
   }
-  changeVisualizeOption(event) {
-    console.log(event.target);
-    console.log(event.target.value);
+  changeChartType(event) {
   }
   render() {
     const data = this.props.queries.map((query) => {
@@ -66,7 +63,7 @@ class QueryTable extends React.Component {
           <Link
             className="fa fa-line-chart fa-lg"
             tooltip="Visualize the data out of this query"
-            onClick={this.showVisualizeModal.bind(this, q)}
+            onClick={this.showVisualizeModal.bind(this, query)}
             href="#"
           />
           <Link
@@ -90,79 +87,44 @@ class QueryTable extends React.Component {
 
       return q;
     }).reverse();
-    let visualizeModal;
+    let visualizeModalBody;
     if (this.state.activeQuery) {
       const cols = this.state.activeQuery.results.columns;
-      const columnOptions = cols.map((s) => ({ value: s, label: s }));
-      visualizeModal = (
+      visualizeModalBody = (
         <div>
-          <form>
-            <FormGroup>
-              <Radio
-                name="visualizeOption"
-                value="quick"
-                onChange={this.changeVisualizeOption.bind(this)}
-                inline
-              >
-                Quick Visualization
-              </Radio>
-              <Radio
-                name="visualizeOption"
-                value="datasource"
-                onChange={this.changeVisualizeOption.bind(this)}
-                inline
-              >
-                Create a datasource for exploration
-              </Radio>
-            </FormGroup>
-
-            Visualization Type:
-            <Select
-              name="select-db"
-              placeholder="[Visualization Type]"
-              className="m-b-10"
-              options={[
-                { value: 'line', label: 'Line Chart' },
-                { value: 'bar', label: 'Bar Chart' },
-                { value: 'bubble', label: 'Bubble Chart' },
-              ]}
-              value={null}
-              autosize={false}
-              onChange={() => {}}
-            />
-            Metric:
-            <Select
-              className="m-b-10"
-              name="select-db"
-              placeholder="[Visualization Type]"
-              options={columnOptions}
-              value={null}
-              autosize={false}
-              onChange={() => {}}
-            />
-            Series:
-            <Select
-              name="select-db"
-              placeholder="[Visualization Type]"
-              className="m-b-10"
-              options={columnOptions}
-              value={null}
-              autosize={false}
-              onChange={() => {}}
-            />
-            <ButtonWithTooltip
-              bsStyle="primary"
-              className="m-r-10"
-              onClick={() => {}}
-            >
-              <i className="fa fa-line-chart" /> Visualize!
-            </ButtonWithTooltip>
-            <ButtonWithTooltip
-              onClick={this.hideVisualizeModal.bind(this)}
-            >
-              <i className="fa fa-close" /> Close
-            </ButtonWithTooltip>
-          </form>
+          <Select
+            name="select-chart-type"
+            placeholder="[Chart Type]"
+            options={[
+              { value: 'line', label: 'Time Series - Line Chart' },
+              { value: 'bar', label: 'Time Series - Bar Chart' },
+              { value: 'bar_dist', label: 'Distribution - Bar Chart' },
+              { value: 'pie', label: 'Pie Chart' },
+            ]}
+            value={null}
+            autosize={false}
+            onChange={this.changeChartType.bind(this)}
+          />
+          <Table
+            className="table table-condensed"
+            columns={['column', 'is_dimension', 'is_date', 'agg_func']}
+            data={cols.map((col) => ({
+              column: col,
+              is_dimension: <input type="checkbox" className="form-control" />,
+              is_date: <input type="checkbox" className="form-control" />,
+              agg_func: (
+                <Select
+                  options={[
+                    { value: 'sum', label: 'SUM(x)' },
+                    { value: 'min', label: 'MIN(x)' },
+                    { value: 'max', label: 'MAX(x)' },
+                    { value: 'avg', label: 'AVG(x)' },
+                    { value: 'count_distinct', label: 'COUNT(DISTINCT x)' },
+                  ]}
+                />
+              ),
+            }))}
+          />
         </div>
       );
     }
@@ -170,10 +132,11 @@ class QueryTable extends React.Component {
       <div>
         <Modal show={this.state.showVisualizeModal} onHide={this.hideVisualizeModal.bind(this)}>
           <Modal.Header closeButton>
-            <Modal.Title>Add tables to workspace (mock)</Modal.Title>
+            <Modal.Title>Visualize (mock)</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {visualizeModal}
+            <Alert bsStyle="danger">Not functional - Work in progress!</Alert>
+            {visualizeModalBody}
           </Modal.Body>
         </Modal>
         <Table

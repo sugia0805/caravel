@@ -14,7 +14,7 @@ class ResultSet extends React.Component {
           data={this.props.resultset.data}
           columns={this.props.resultset.columns}
           sortable
-          className="table table-condensed"
+          className="table table-condensed table-bordered"
         />
       );
     }

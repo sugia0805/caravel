@@ -1,6 +1,6 @@
 const $ = window.$ = require('jquery');
 import React from 'react';
-import { Button, ButtonGroup, DropdownButton, MenuItem } from 'react-bootstrap';
+import { Button, ButtonGroup, DropdownButton, Label, MenuItem, OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 import AceEditor from 'react-ace';
 import 'brace/mode/sql';
@@ -11,10 +11,11 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import * as Actions from '../actions';
 import shortid from 'shortid';
-import Select from 'react-select';
 import ButtonWithTooltip from './ButtonWithTooltip';
 import SouthPane from './SouthPane';
 import Timer from './Timer';
+
+import SqlEditorTopToolbar from './SqlEditorTopToolbar';
 
 // CSS
 import 'react-select/dist/react-select.css';
@@ -23,14 +24,9 @@ class SqlEditor extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      databaseOptions: [],
-      databaseLoading: true,
-      sql: props.queryEditor.sql,
       autorun: props.queryEditor.autorun,
+      sql: props.queryEditor.sql,
     };
-  }
-  componentWillMount() {
-    this.fetchDatabaseOptions();
   }
   componentDidMount() {
     if (this.state.autorun) {
@@ -39,14 +35,17 @@ class SqlEditor extends React.Component {
       this.startQuery();
     }
   }
-  fetchDatabaseOptions() {
-    this.setState({ databaseLoading: true });
-    const that = this;
-    const url = '//' + window.location.host + '/databaseasync/api/read';
+  getTableOptions(input, callback) {
+    const url = '/tableasync/api/read?_oc_DatabaseAsync=database_name&_od_DatabaseAsync=asc';
     $.get(url, function (data) {
-      const options = data.result.map((db) => ({ value: db.id, label: db.database_name }));
-      that.setState({ databaseOptions: options });
-      that.setState({ databaseLoading: false });
+      const options = [];
+      for (let i = 0; i < data.pks.length; i++) {
+        options.push({ value: data.pks[i], label: data.result[i].table_name });
+      }
+      callback(null, {
+        options,
+        cache: false,
+      });
     });
   }
   startQuery() {
@@ -60,10 +59,11 @@ class SqlEditor extends React.Component {
       dbId: this.props.queryEditor.dbId,
       startDttm: new Date(),
     };
-    const url = '//' + window.location.host + '/caravel/sql_json/';
+    const url = '/caravel/sql_json/';
     const data = {
       sql: this.state.sql,
       database_id: this.props.queryEditor.dbId,
+      schema: this.props.queryEditor.schema,
       json: true,
     };
     this.props.actions.startQuery(query);
@@ -93,11 +93,9 @@ class SqlEditor extends React.Component {
   stopQuery() {
     this.props.actions.stopQuery(this.props.latestQuery);
   }
-  changeDb(db) {
-    this.props.actions.queryEditorSetDb(this.props.queryEditor, db.value);
-  }
   textChange(text) {
-    this.setState({ sql: text });
+    this.setState({ sql: text })
+    this.props.actions.queryEditorSetSql(this.props.queryEditor, text);
   }
   notImplemented() {
     alert('Not implemented');
@@ -107,6 +105,7 @@ class SqlEditor extends React.Component {
       id: shortid.generate(),
       sql: this.state.sql,
       dbId: this.props.queryEditor.dbId,
+      schema: this.props.queryEditor.schema,
       title: this.props.queryEditor.title,
     });
   }
@@ -150,13 +149,43 @@ class SqlEditor extends React.Component {
             <i className="fa fa-file-code-o" /> export to .json
           </MenuItem>
         </DropdownButton>
-
       </ButtonGroup>
+    );
+    let limitWarning = null;
+    const row_limit = 1000;
+    if (this.props.latestQuery && this.props.latestQuery.rows === row_limit) {
+      const tooltip = (
+        <Tooltip id="tooltip">
+          It appears that the number of rows in the query results displayed
+          was limited on the server side to the {row_limit} limit.
+        </Tooltip>
+      );
+      limitWarning = (
+        <OverlayTrigger placement="left" overlay={tooltip}>
+          <Label bsStyle="warning" className="m-r-5">LIMIT</Label>
+        </OverlayTrigger>
+      );
+    }
+    const editorBottomBar = (
+      <div className="clearfix sql-toolbar padded">
+        <div className="pull-left">
+          {runButtons}
+          <span className="inlineblock valignTop" style={{ height: '20px' }}>
+            <input type="text" className="form-control" placeholder="CREATE TABLE AS" />
+          </span>
+        </div>
+        <div className="pull-right">
+          {limitWarning}
+          <Timer query={this.props.latestQuery} />
+          {rightButtons}
+        </div>
+      </div>
     );
     return (
       <div className="SqlEditor">
         <div>
           <div>
+            <SqlEditorTopToolbar queryEditor={this.props.queryEditor} />
             <AceEditor
               mode="sql"
               name={this.props.queryEditor.title}
@@ -170,28 +199,7 @@ class SqlEditor extends React.Component {
               enableBasicAutocompletion
               value={this.state.sql}
             />
-            <div className="clearfix sql-toolbar padded">
-              <div className="pull-left">
-                {runButtons}
-                <div className="inlineblock m-r-5">
-                  <Select
-                    name="select-db"
-                    placeholder="[Database]"
-                    options={this.state.databaseOptions}
-                    value={this.props.queryEditor.dbId}
-                    autosize={false}
-                    onChange={this.changeDb.bind(this)}
-                  />
-                </div>
-                <span className="inlineblock valignTop" style={{ height: '20px' }}>
-                  <input type="text" className="form-control" placeholder="CREATE TABLE AS" />
-                </span>
-              </div>
-              <div className="pull-right">
-                <Timer query={this.props.latestQuery} />
-                {rightButtons}
-              </div>
-            </div>
+            {editorBottomBar}
             <div className="padded">
               <SouthPane latestQuery={this.props.latestQuery} sqlEditor={this} />
             </div>
@@ -213,7 +221,6 @@ SqlEditor.defaultProps = {
 
 function mapStateToProps(state) {
   return {
-    queries: state.queries,
   };
 }
 

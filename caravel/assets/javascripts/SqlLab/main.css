@@ -154,19 +154,15 @@ div.Workspace {
     padding: 5px 10px;
 }
 
-.SqlAnvil table {
+.SqlLab table {
     font-size: 12px;
 }
 
-.SqlAnvil table {
+.SqlLabe table {
     margin: 0px;
 }
 
-.SqlAnvil .table-condensed > tbody > tr > td {
-    //padding: 0px 5px;
-}
-
-.SqlAnvil pre {
+.SqlLab pre {
     padding: 0px !important;
     margin: 0px;
     border: none;
@@ -232,4 +228,21 @@ a.Link {
 
 table .label {
     margin-top: 5px;
+}
+.popover{
+    max-width:400px;
+}
+.Select-menu-outer {
+    z-index: 1000;
+}
+.table-label {
+    margin-top: 5px;
+    margin-right: 10px;
+    float: left;
+}
+div.tablePopover {
+    opacity: 0.7 !important;
+}
+div.tablePopover:hover {
+    opacity: 1 !important;
 }

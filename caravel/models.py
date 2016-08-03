@@ -388,10 +388,19 @@ class Database(Model, AuditMixinNullable):
     def __repr__(self):
         return self.database_name
 
-    def get_sqla_engine(self):
+    def get_sqla_engine(self, schema=None):
         extra = self.get_extra()
         params = extra.get('engine_params', {})
-        return create_engine(self.sqlalchemy_uri_decrypted, **params)
+        connect_args = {'db': schema} if schema else {}
+        return create_engine(
+            self.sqlalchemy_uri_decrypted, connect_args=connect_args, **params)
+
+    def get_df(self, sql, schema):
+        eng = self.get_sqla_engine(schema=schema)
+        cur = eng.execute(sql, schema=schema)
+        cols = [col[0] for col in cur.cursor.description]
+        df = pd.DataFrame(cur.fetchall(), columns=cols)
+        return df
 
     def safe_sqlalchemy_uri(self):
         return self.sqlalchemy_uri
@@ -401,8 +410,14 @@ class Database(Model, AuditMixinNullable):
         engine = self.get_sqla_engine()
         return sqla.inspect(engine)
 
-    def all_table_names(self):
-        return sorted(self.inspector.get_table_names())
+    def all_table_names(self, schema=None):
+        return sorted(self.inspector.get_table_names(schema))
+
+    def all_view_names(self, schema=None):
+        return sorted(self.inspector.get_view_names(schema))
+
+    def all_schema_names(self):
+        return sorted(self.inspector.get_schema_names())
 
     def grains(self):
         """Defines time granularity database-specific expressions.
@@ -499,8 +514,8 @@ class Database(Model, AuditMixinNullable):
             autoload=True,
             autoload_with=self.get_sqla_engine())
 
-    def get_columns(self, table_name):
-        return self.inspector.get_columns(table_name)
+    def get_columns(self, table_name, schema=None):
+        return self.inspector.get_columns(table_name, schema)
 
     @property
     def sqlalchemy_uri_decrypted(self):
@@ -754,7 +769,7 @@ class SqlaTable(Model, Queryable, AuditMixinNullable):
         qry = qry.limit(row_limit)
 
         if timeseries_limit and groupby:
-            # some sql dialects require for order by expressions 
+            # some sql dialects require for order by expressions
             # to also be in the select clause
             inner_select_exprs += [main_metric_expr]
             subq = select(inner_select_exprs)

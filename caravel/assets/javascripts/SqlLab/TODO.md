@@ -1,5 +1,4 @@
 # Design
-* Multi-workspace? How?
 * Query Log, search, filter on active tab only
 * Where to make the limit clear?
 
