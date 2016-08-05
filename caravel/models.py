@@ -391,9 +391,11 @@ class Database(Model, AuditMixinNullable):
     def get_sqla_engine(self, schema=None):
         extra = self.get_extra()
         params = extra.get('engine_params', {})
-        connect_args = {'db': schema} if schema else {}
-        return create_engine(
-            self.sqlalchemy_uri_decrypted, connect_args=connect_args, **params)
+        from sqlalchemy.engine.url import make_url
+        url = make_url(self.sqlalchemy_uri_decrypted)
+        if schema:
+            url.database = schema
+        return create_engine(url, **params)
 
     def get_df(self, sql, schema):
         eng = self.get_sqla_engine(schema=schema)
