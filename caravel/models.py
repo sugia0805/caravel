@@ -414,7 +414,12 @@ class Database(Model, AuditMixinNullable):
         return sorted(self.inspector.get_table_names(schema))
 
     def all_view_names(self, schema=None):
-        return sorted(self.inspector.get_view_names(schema))
+        views = []
+        try:
+            views = self.inspector.get_view_names(schema)
+        except Exception as e:
+            pass
+        return views
 
     def all_schema_names(self):
         return sorted(self.inspector.get_schema_names())
