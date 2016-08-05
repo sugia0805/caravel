@@ -16,6 +16,7 @@ import humanize
 import pandas as pd
 import requests
 import sqlalchemy as sqla
+from sqlalchemy.engine.url import make_url
 import sqlparse
 from dateutil.parser import parse
 
@@ -391,9 +392,14 @@ class Database(Model, AuditMixinNullable):
     def get_sqla_engine(self, schema=None):
         extra = self.get_extra()
         params = extra.get('engine_params', {})
-        from sqlalchemy.engine.url import make_url
         url = make_url(self.sqlalchemy_uri_decrypted)
-        if schema:
+        backend = url.get_backend_name()
+        if backend == 'presto' and schema:
+            if '/' in url.database:
+                url.database = url.database.split('/')[0] + '/' + schema
+            else:
+                url.database += '/' + schema
+        elif schema:
             url.database = schema
         return create_engine(url, **params)
 
